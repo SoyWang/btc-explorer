@@ -1,0 +1,229 @@
+- var colClass = "col-lg-6 px-2";
+if (exchangeRates || networkVolume)
+	- colClass = "col-lg-4 px-2";
+
+- var utxoCalculatingDesc = "At startup the app pulls a summary of the UTXO set. Until this summary is retrieved this data can't be displayed. Wait for the summary request to your node to return, then refresh this page.";
+
+
+
+
+if (exchangeRates)
+	+contentSection("Market")
+		- var colCount = 3 + (networkVolume ? 1 : 0) + (goldExchangeRates ? 1 : 0);
+		+summaryRow(colCount)
+			- var tzDiff = -parseFloat(browserTzOffset);
+			if (userTzOffset != "unset")
+				- tzDiff = parseFloat(userTzOffset);
+
+			- var tzMoment = moment.utc(global.exchangeRatesUpdateTime).add(tzDiff, "hours");
+			- var timeText = tzMoment.format("h:mma");
+
+			+summaryItem("Exchange Rate", `Source: ${new URL(coinConfig.exchangeRateData.jsonUrl).hostname}<br/>Last Updated: ${timeText} (${new Decimal(new Date().getTime() - global.exchangeRatesUpdateTime.getTime()).dividedBy(1000).dividedBy(60).toDP(0)} min ago)`)
+				- var formatData = utils.formatExchangedCurrency(1.0, userSettings.localCurrency);
+
+				span.text-success
+					span.me-1 #{formatData.symbol}
+					| #{formatData.val}
+
+			+summaryItem("Sats Rate")
+				- var satsRateData = utils.satoshisPerUnitOfLocalCurrency(userSettings.localCurrency);
+				span #{satsRateData.amt}
+					small  #{satsRateData.unit}
+
+			+summaryItem("Market Cap")
+				- var supply = utils.estimatedSupply(getblockchaininfo.blocks);
+				- var mcapData = utils.formatLargeNumber(parseFloat(supply) * global.exchangeRates[userSettings.localCurrency], 3);
+
+				span.me-1 #{global.currencyTypes[userSettings.localCurrency].symbol}
+				
+				span #{mcapData[0]}
+				if (mcapData[1].textDesc)
+					span.ms-1 #{mcapData[1].textDesc}
+				else
+					span  x 10
+					sup #{mcapData[1].exponent}
+
+				// ["154.9",{"val":1000000000,"name":"giga","abbreviation":"G","exponent":"9"}]
+
+			if (global.goldExchangeRates && global.goldExchangeRates["usd"] && global.exchangeRates && global.exchangeRates["usd"])
+				// usd is the only bridge for our data sources
+				+summaryItem("Gold Rate", `Source: ${new URL(coinConfig.goldExchangeRateData.jsonUrl).hostname}`)
+					- var formatData = utils.formatExchangedCurrency(1.0, "au");
+
+					span.text-warning #{formatData.val}
+					small.ms-1.text-muted #{formatData.unit}
+
+			if (networkVolume)
+				+summaryItem("24hr Volume", `Total output of all transactions over the last 24hrs (blocks: [#${networkVolume.d1.endBlock.toLocaleString()} - #${networkVolume.d1.startBlock.toLocaleString()}]).`)
+					- var currencyValue = parseInt(networkVolume.d1.amt);
+					- var currencyValueDecimals = 0;
+
+					if (userSettings.displayCurrency == "btc")
+						+valueDisplaySpecial(networkVolume.d1.amt, 0)
+
+					else
+						+valueDisplay(networkVolume.d1.amt)
+
+					
+
+.clearfix
+	.float-start
+		+sectionTitle("Network Summary")
+	.float-end
+		if (userSettings.homepageShowTechDetails == "true")
+			a.me-2(href="./changeSetting?name=homepageShowTechDetails&value=false", title="Hide technical network details", data-bs-toggle="tooltip", data-bs-placement="bottom")
+				i.fas.fa-server.text-muted
+
+		else
+			a.me-2(href="./changeSetting?name=homepageShowTechDetails&value=true", title="Show technical network details", data-bs-toggle="tooltip", data-bs-placement="bottom")
+				i.fas.fa-server.text-muted
+
++contentSection
+	+summaryRow(1 + (hashrate7d ? 1 : 0) + (chainTxStats && chainTxStats[7 * targetBlocksPerDay] ? 1 : 0) + (difficultyAdjustmentData ? 1 : 0))
+		if (hashrate7d)
+			+summaryItem("7d Hashrate", "The average hashrate of the global mining network over the last 7 days. A comparison to the 30-day average is included to help gauge the rate of change.")
+				- var hashrate7dayData = utils.formatLargeNumber(hashrate7d, 1);
+
+				span.me-1 #{hashrate7dayData[0]}
+				span.small.text-muted.border-dotted.me-2(title=`${hashrate7dayData[1].abbreviation}H = ${hashrate7dayData[1].name}-hash (x10^${hashrate7dayData[1].exponent})` data-bs-toggle='tooltip') #{hashrate7dayData[1].abbreviation}H/s
+
+				if (hashrate30d)
+					- var ratio = hashrate7d / hashrate30d;
+
+					small
+						| (
+						span.border-dotted(title='7d hashrate vs 30d hashrate.' data-bs-toggle='tooltip')
+							if (ratio > 1)
+								- var ratioPercent = new Decimal(ratio).times(100).minus(100);
+								span.text-success +#{ratioPercent.toDP(2)}%
+
+							else
+								- var ratioPercent = new Decimal(100).minus(new Decimal(ratio).times(100));
+								span.text-danger -#{ratioPercent.toDP(2)}%
+
+						| )
+
+		if (chainTxStats && chainTxStats[7 * targetBlocksPerDay])
+			+summaryItem("7d Transactions", "The total number of transactions that have been confirmed in the blockchain over the last 7 days.")
+				| #{chainTxStats[7 * targetBlocksPerDay].window_tx_count.toLocaleString()}
+
+		if (difficultyAdjustmentData)
+			- var desc = `Estimate for the difficulty adjustment that will occur in ${difficultyAdjustmentData.blocksLeft.toLocaleString()} block${difficultyAdjustmentData.blocksLeft == 1 ? "" : "s"} (${difficultyAdjustmentData.timeLeftStr}). This is calculated using the average block time during the current difficulty epoch (currently, the last ${difficultyAdjustmentData.calculationBlockCount.toLocaleString()} block${difficultyAdjustmentData.calculationBlockCount == 1 ? "" : "s"}). Note: This estimate becomes more reliable as the difficulty epoch nears its end.`;
+			
+			if (false)
+				pre
+					code.json #{JSON.stringify(difficultyAdjustmentData, null, 4)}
+
+			+summaryItem("Difficulty Δ", difficultyAdjustmentData.estimateAvailable ? desc : null)
+				if (difficultyAdjustmentData.estimateAvailable)
+					span.me-2(class=(difficultyAdjustmentData.delta >= 0 ? "text-success" : "text-danger"))
+						if (difficultyAdjustmentData.sign == "+")
+							| +
+
+						| #{difficultyAdjustmentData.delta.toDP(2)}
+						small.ms-1 %
+					small.text-muted
+						| (
+						span.border-dotted(title=`${difficultyAdjustmentData.blocksLeft.toLocaleString()} block(s)`, data-bs-toggle="tooltip") #{difficultyAdjustmentData.timeLeftStr}
+						| )
+
+				else
+					small.border-dotted.text-muted(title="Estimate pending...<br/>A new difficulty epoch just started. Difficulty adjustment estimates made with too little data can be very unreliable, so are not calculated.", data-bs-toggle="tooltip", data-bs-html="true")
+						i.fas.fa-hourglass-half
+
+		+summaryItem("Coins", utxoSetSummary ? null : `This value is estimated.`)
+			- var maxSupply = coinConfig.maxSupplyByNetwork[activeBlockchain];
+
+			if (utxoSetSummary)
+				span #{parseFloat(utxoSetSummary.total_amount).toLocaleString()}
+				span.small.ms-2.text-muted
+					| (
+					span.border-dotted(title=`${new Decimal(utxoSetSummary.total_amount).dividedBy(maxSupply).times(100).toDP(5)}% have been mined into circulation`, data-bs-toggle="tooltip") #{new Decimal(utxoSetSummary.total_amount).dividedBy(maxSupply).times(100).toDP(2, Decimal.ROUND_DOWN)}%
+					| )
+
+			else
+				- var estimatedSupply = utils.estimatedSupply(getblockchaininfo.blocks);
+
+				span #{parseInt(estimatedSupply).toLocaleString()}
+				small.ms-2.text-muted
+					| (
+					span.border-dotted(title=`${estimatedSupply.dividedBy(maxSupply).times(100).toDP(4)}% have been mined into circulation`, data-bs-toggle="tooltip") #{estimatedSupply.dividedBy(maxSupply).times(100).toDP(1)}%
+					| )
+
+		
+
+	hr.mt-3.mb-3
+
+	- var smartFeeEstimateBlocks = [];
+	- var smartFeeEstimateStrings = [];
+	if (smartFeeEstimates)
+		if (smartFeeEstimates[1])
+			- smartFeeEstimateBlocks.push(1);
+			- smartFeeEstimateStrings.push(smartFeeEstimates[1]);
+		if (smartFeeEstimates[6])
+			- smartFeeEstimateBlocks.push(6);
+			- smartFeeEstimateStrings.push(smartFeeEstimates[6]);
+		if (smartFeeEstimates[144])
+			- smartFeeEstimateBlocks.push(144);
+			- smartFeeEstimateStrings.push(smartFeeEstimates[144]);
+
+	+summaryRow((mempoolInfo == undefined ? 0 : 1) + (smartFeeEstimateStrings.length > 0 ? 1 : 0))
+		if (mempoolInfo)
+			- var thresholds = [11000, 7000];
+			- var colorClass_txCount = (mempoolInfo.size > 11000) ? "text-danger" : (mempoolInfo.size > 7000 ? "text-warning" : "text-success");
+			- var blockCount = new Decimal(mempoolInfo.bytes).dividedBy(coinConfig.maxBlockSize);
+			- var colorClass_blockCount = (blockCount > 20) ? "text-danger" : (blockCount > 10 ? "text-warning" : "text-success");
+			
+			+summaryItem("Mempool", "The number of unconfirmed transactions in your node's mempool, and the number of blocks needed to confirm those transactions")
+				span(class=colorClass_txCount) #{mempoolInfo.size.toLocaleString()}
+				span.text-tiny.text-muted.ms-1 tx
+
+				span.fw-light.text-muted.mx-2 &ndash;
+
+				span(class=colorClass_blockCount) #{blockCount.toDP(2)}
+				span.text-tiny.text-muted.ms-1 blocks
+
+
+		if (false)
+			+summaryItem("Next Block (est.)")
+				| #{new Decimal(nextBlockMinFeeRate).toDP(0)}
+				a(href=`./tx/${nextBlockMinFeeTxid}`)
+					i.fas.fa-circle
+				| - #{new Decimal(nextBlockMaxFeeRate).toDP(0)}
+				a(href=`./tx/${nextBlockMaxFeeTxid}`)
+					i.fas.fa-circle
+				small.ms-2.text-muted sat/vB
+
+		if (smartFeeEstimateStrings.length > 0)
+			+summaryItem(`Smart Fees (${smartFeeEstimateBlocks.join(", ")})`, `The recommended fee rate to target confirmation in ${smartFeeEstimateBlocks.join(", ")} blocks`, "sat/vB")
+				| #{smartFeeEstimateStrings.join(", ")}
+
+		
+
+	if (userSettings.homepageShowTechDetails == "true")
+		hr.mt-3.mb-3
+
+		+summaryRow(1 + (getblockchaininfo.size_on_disk ? 1 : 0) + (utxoSetSummary || utxoSetSummaryPending ? 1 : 0))
+			if (getblockchaininfo.size_on_disk)
+				+summaryItem("Disk Usage")
+					- var sizeData = utils.formatLargeNumber(getblockchaininfo.size_on_disk, 1);
+					| #{sizeData[0]} #{sizeData[1].abbreviation}B
+
+			+summaryItem("Total Hashes", "Estimate of the total work necessary to produce the blockchain, measured in 'hashes'.")
+				- var chainworkData = utils.formatLargeNumber(parseInt("0x" + getblockchaininfo.chainwork), 2);
+				span #{chainworkData[0]}
+				small.px-2.px-lg-0.px-xl-2 x
+				span 10
+				sup #{chainworkData[1].exponent}
+
+
+			if (utxoSetSummary || utxoSetSummaryPending)
+				+summaryItem("UTXOs", "The total number of unspent transaction outputs (spendable coin units).")
+					if (utxoSetSummary)
+						- var utxoCount = utils.formatLargeNumber(utxoSetSummary.txouts, 2);
+						//| #{utxoCount[0]} #{utxoCount[1].abbreviation}
+						| #{utxoSetSummary.txouts.toLocaleString()}
+					else
+						small.text-muted.border-dotted(title=utxoCalculatingDesc, data-bs-toggle="tooltip") calculating...
+
+
