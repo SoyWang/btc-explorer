@@ -262,15 +262,15 @@ html(lang="en")
 							h6 Project
 
 							.ms-2
-								a.footer-link(href="https://github.com/janoside/btc-rpc-explorer") github.com/janoside/btc-rpc-explorer
+								a.footer-link(href="http://hkvax.com") github.com/janoside/btc-rpc-explorer
 									
 								if (global.sourcecodeProjectMetadata)
 									div.mt-2
-										a.btn.btn-primary.btn-sm.me-3.mb-1.text-decoration-none(href="https://github.com/janoside/btc-rpc-explorer")
+										a.btn.btn-primary.btn-sm.me-3.mb-1.text-decoration-none(href="http://hkvax.com")
 											i.fas.fa-star.fontawesome-shadow.text-warning.me-2
 											span.badge.bg-white.text-dark #{global.sourcecodeProjectMetadata.stargazers_count}
 
-										a.btn.btn-primary.btn-sm.me-3.mb-1.text-decoration-none(href="https://github.com/janoside/btc-rpc-explorer/fork")
+										a.btn.btn-primary.btn-sm.me-3.mb-1.text-decoration-none(href="http://hkvax.com")
 											i.fas.fa-code-branch.fontawesome-shadow.me-2
 											span.badge.bg-white.text-dark #{global.sourcecodeProjectMetadata.forks_count}
 
@@ -283,7 +283,7 @@ html(lang="en")
 								if (sourcecodeVersion)
 									br
 									span commit: 
-										a.footer-link(href=`https://github.com/janoside/btc-rpc-explorer/commit/${sourcecodeVersion}`) #{sourcecodeVersion}
+										a.footer-link(href=`https://github.com/SoyWang/btc-explorer/commit/${sourcecodeVersion}`) #{sourcecodeVersion}
 								
 								br
 								span released: #{sourcecodeDate}
