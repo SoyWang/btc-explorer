@@ -164,8 +164,8 @@ module.exports = {
 			chain: "main",
 			txid: "a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d",
 			blockHeight: 57043,
-			summary: "The 'Bitcoin Pizza' transaction.",
-			alertBodyHtml: "This is the famous 'Bitcoin Pizza' transaction, one of the earliest 'real-world' transactions, in which 10,000 BTC was paid for 2 large pizzas worth ~41 USD (at an effective exchange rate of ~$0.004/BTC).",
+			summary: "The \"Bitcoin Pizza\" transaction.",
+			alertBodyHtml: "This is the famous \"Bitcoin Pizza\" transaction, one of the earliest real-world transactions, in which 10,000 BTC was paid for 2 large pizzas worth ~41 USD (at an effective exchange rate of ~$0.004/BTC).",
 			referenceUrl: "https://bitcointalk.org/index.php?topic=137.0"
 		},
 		{
@@ -439,6 +439,36 @@ module.exports = {
 			blockHeight: 712928,
 			summary: "Far-future dated Locktime value.",
 			alertBodyHtml: "The 'locktime' value of a transaction usually specifies the earliest time that a transaction may be mined (included in a block). The value can take one of two forms: a block height (if the value is &leq; 500M), or a unix timestamp. The locktime value of this transaction seemingly indicates that the transaction cannot be mined until the year 2076. But, because this is a coinbase transaction (created by a miner in the process of mining a block), its locktime value does not need to honor the usual purpose, and may instead be representing some other data from the miner. This situation arises fairly regularly in coinbase transactions."
+		},
+		{
+			type: "tx",
+			date: "2015-06-21",
+			chain: "main",
+			txid: "71c3da4e13f5b61c2cf05e9b5a22f3be989142b870c1cf7779a1d7b3f139d422",
+			blockHeight: 361935,
+			summary: "Value provably destroyed in OP_RETURN output.",
+			alertBodyHtml: "OP_RETURN outputs are special-case outputs that immediately abort script evaluation with a failure result. Therefore, any value assigned to an OP_RETURN output is provably unspendable. In fact, as an optimization, such values are purged from node software's databases since they are certain to be unspendable in all future transactions.",
+			referenceUrl: "https://bitcoin.stackexchange.com/a/109748/3397"
+		},
+		{
+			type: "tx",
+			date: "2022-01-13",
+			chain: "main",
+			txid: "37d5ec4bca7bd077992a6dd8679ab676a22986e63ebaf2c6ea1aebe5e5f5e817",
+			blockHeight: 718448,
+			summary: "Unspendable output due to invalid public key.",
+			alertBodyHtml: "The Script for Output #0 of this transaction has a public key that does not conform to the <a href='https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#Public_Key_Generation'>BIP-340</a> specification (\"Schnorr Signatures for secp256k1\"). The value assinged to this output (0.0002 BTC) is therefore burned forever.",
+			referenceUrl: "https://suredbits.com/taproot-funds-burned-on-the-bitcoin-blockchain/"
+		},
+		{
+			type: "tx",
+			date: "2022-05-18",
+			chain: "main",
+			txid: "80ab328c77cbd554598c3a7b322af520a77d1687b27badfa969d2c419de785d7",
+			blockHeight: 736943,
+			summary: "Lightning Network penalty transaction",
+			alertBodyHtml: "As a technical experiment and as a playful donation, User <a href='https://twitter.com/fiatjaf'>fiatjaf</a> intentionally created a situation where his lightning node would be penalized and forfeit funds to his channel counterparty. The second input to this transaction represents the penalty close, wherein all of the funds on fiatjaf's side of the channel were forfeited to his counterparty.",
+			referenceUrl: "http://fiatjaf.com/73095980.html"
 		},
 
 
