@@ -1,5 +1,5 @@
 # btc-explorer
-比特币区块链浏览器
+Btc区块链浏览器
 
 本地私有链连接：修改btc-rpc-explor目录下.env文件中连接信息即可
 
